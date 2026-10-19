@@ -1,0 +1,79 @@
+// Prisma schema for Healthcare Management Backend
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// User model for authentication and ownership
+model User {
+  id        Int       @id @default(autoincrement())
+  name      String
+  email     String    @unique
+  password  String
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  patients  Patient[]
+  doctors   Doctor[]
+
+  @@map("users")
+}
+
+// Patient model owned by the user who created it
+model Patient {
+  id          Int             @id @default(autoincrement())
+  name        String
+  dateOfBirth DateTime?
+  age         Int?
+  gender      String
+  contact     String
+  address     String
+  createdById Int
+  createdBy   User            @relation(fields: [createdById], references: [id], onDelete: Cascade)
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+
+  mappings    PatientDoctor[]
+
+  @@index([createdById])
+  @@map("patients")
+}
+
+// Doctor model created and managed by authorized users
+model Doctor {
+  id             Int             @id @default(autoincrement())
+  name           String
+  specialization String
+  contact        String
+  address        String
+  createdById    Int
+  createdBy      User            @relation(fields: [createdById], references: [id], onDelete: Cascade)
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+
+  mappings       PatientDoctor[]
+
+  @@index([createdById])
+  @@map("doctors")
+}
+
+// Junction model mapping patients to doctors
+model PatientDoctor {
+  id         Int      @id @default(autoincrement())
+  patientId  Int
+  doctorId   Int
+  assignedAt DateTime @default(now())
+
+  patient    Patient  @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  doctor     Doctor   @relation(fields: [doctorId], references: [id], onDelete: Cascade)
+
+  @@unique([patientId, doctorId], name: "patient_doctor_unique")
+  @@index([patientId])
+  @@index([doctorId])
+  @@map("patient_doctors")
+}

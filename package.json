@@ -1,0 +1,40 @@
+{
+  "name": "healthcare-backend",
+  "version": "1.0.0",
+  "description": "Healthcare Management Backend REST API built with Express, PostgreSQL 17, and Prisma ORM",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "nodemon src/server.js",
+    "prisma:generate": "prisma generate",
+    "prisma:migrate": "prisma migrate dev",
+    "prisma:push": "prisma db push",
+    "prisma:studio": "prisma studio",
+    "test": "node test/api-test.js"
+  },
+  "keywords": [
+    "healthcare",
+    "express",
+    "postgresql",
+    "prisma",
+    "jwt",
+    "zod",
+    "rest-api"
+  ],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "@prisma/client": "^6.4.1",
+    "bcryptjs": "^3.0.3",
+    "cors": "^2.8.6",
+    "dotenv": "^18.0.8",
+    "express": "^5.3.0",
+    "jsonwebtoken": "^9.0.3",
+    "zod": "^4.6.7"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.14",
+    "prisma": "^6.4.1"
+  }
+}

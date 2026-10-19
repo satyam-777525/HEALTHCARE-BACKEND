@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Healthcare API Tester</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
+    body { background: #0f172a; color: #f8fafc; padding: 24px; }
+    .container { max-width: 1200px; margin: 0 auto; }
+    header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; padding-bottom: 16px; border-bottom: 1px solid #334155; }
+    h1 { font-size: 24px; color: #38bdf8; }
+    .token-badge { background: #1e293b; padding: 8px 14px; border-radius: 8px; font-size: 13px; border: 1px solid #334155; }
+    .token-badge span { color: #4ade80; font-weight: bold; }
+    .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+    @media (max-width: 850px) { .grid { grid-template-columns: 1fr; } }
+    .card { background: #1e293b; border-radius: 12px; padding: 18px; border: 1px solid #334155; margin-bottom: 18px; }
+    .card h2 { font-size: 16px; margin-bottom: 12px; color: #94a3b8; display: flex; align-items: center; gap: 8px; }
+    .btn { background: #2563eb; color: white; border: none; padding: 9px 15px; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 500; transition: 0.2s; }
+    .btn:hover { background: #1d4ed8; }
+    .btn-green { background: #16a34a; } .btn-green:hover { background: #15803d; }
+    .btn-purple { background: #9333ea; } .btn-purple:hover { background: #7e22ce; }
+    .btn-amber { background: #d97706; } .btn-amber:hover { background: #b45309; }
+    .btn-red { background: #dc2626; } .btn-red:hover { background: #b91c1c; }
+    .row { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 10px; }
+    input, select { background: #0f172a; border: 1px solid #475569; color: white; padding: 8px 12px; border-radius: 6px; font-size: 13px; flex: 1; min-width: 140px; }
+    input:focus { outline: none; border-color: #38bdf8; }
+    .response-box { background: #0b1120; border-radius: 12px; padding: 18px; border: 1px solid #334155; height: calc(100vh - 140px); position: sticky; top: 24px; display: flex; flex-direction: column; }
+    .response-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+    .status-tag { padding: 4px 10px; border-radius: 6px; font-size: 12px; font-weight: bold; }
+    .status-200, .status-201 { background: #14532d; color: #4ade80; }
+    .status-400, .status-401, .status-403, .status-404, .status-409, .status-500 { background: #7f1d1d; color: #f87171; }
+    pre { flex: 1; overflow-y: auto; background: #030712; padding: 14px; border-radius: 8px; color: #e2e8f0; font-size: 12px; line-height: 1.5; font-family: 'Consolas', monospace; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div>
+        <h1>Healthcare Management API — Live Web Tester</h1>
+        <p style="color: #64748b; font-size: 13px; margin-top: 4px;">Bina Postman ke sidhe browser se test karo</p>
+      </div>
+      <div class="token-badge">
+        Auth Status: <span id="tokenStatus">Not Logged In</span>
+      </div>
+    </header>
+
+    <div class="grid">
+      <!-- Left Column: Controls -->
+      <div>
+        <!-- Quick Health Check -->
+        <div class="card">
+          <h2>1. Health Check</h2>
+          <button class="btn btn-green" onclick="checkHealth()">GET /api/health</button>
+        </div>
+
+        <!-- Authentication -->
+        <div class="card">
+          <h2>2. Authentication</h2>
+          <div class="row">
+            <input type="text" id="regName" placeholder="Full Name" value="Dr. Alex Carter">
+            <input type="email" id="regEmail" placeholder="Email" value="alex.carter@hospital.com">
+          </div>
+          <div class="row">
+            <input type="password" id="regPassword" placeholder="Password (min 6 chars)" value="SecurePass123!">
+            <button class="btn" onclick="registerUser()">Register (POST /api/auth/register)</button>
+          </div>
+          <hr style="border: 0; border-top: 1px solid #334155; margin: 12px 0;">
+          <div class="row">
+            <input type="email" id="loginEmail" placeholder="Email" value="alex.carter@hospital.com">
+            <input type="password" id="loginPassword" placeholder="Password" value="SecurePass123!">
+            <button class="btn btn-green" onclick="loginUser()">Login & Save Token</button>
+          </div>
+        </div>
+
+        <!-- Patients -->
+        <div class="card">
+          <h2>3. Patient Management</h2>
+          <div class="row">
+            <input type="text" id="pName" placeholder="Patient Name" value="John Doe">
+            <input type="number" id="pAge" placeholder="Age" value="35" style="max-width: 90px;">
+            <select id="pGender" style="max-width: 110px;">
+              <option value="MALE">MALE</option>
+              <option value="FEMALE">FEMALE</option>
+              <option value="OTHER">OTHER</option>
+            </select>
+          </div>
+          <div class="row">
+            <input type="text" id="pContact" placeholder="Contact" value="+1-555-0199">
+            <input type="text" id="pAddress" placeholder="Address" value="742 Evergreen Terrace">
+          </div>
+          <div class="row">
+            <button class="btn" onclick="createPatient()">Create Patient (POST /api/patients)</button>
+            <button class="btn btn-purple" onclick="getPatients()">Get All Patients (GET /api/patients)</button>
+          </div>
+        </div>
+
+        <!-- Doctors -->
+        <div class="card">
+          <h2>4. Doctor Management</h2>
+          <div class="row">
+            <input type="text" id="dName" placeholder="Doctor Name" value="Dr. Robert House">
+            <input type="text" id="dSpec" placeholder="Specialization" value="Diagnostic Medicine">
+          </div>
+          <div class="row">
+            <input type="text" id="dContact" placeholder="Contact" value="+1-555-0811">
+            <input type="text" id="dAddress" placeholder="Hospital Address" value="Princeton Plainsboro Hospital">
+          </div>
+          <div class="row">
+            <button class="btn" onclick="createDoctor()">Create Doctor (POST /api/doctors)</button>
+            <button class="btn btn-purple" onclick="getDoctors()">List All Doctors (GET /api/doctors)</button>
+          </div>
+        </div>
+
+        <!-- Mappings -->
+        <div class="card">
+          <h2>5. Patient–Doctor Mapping</h2>
+          <div class="row">
+            <input type="number" id="mapPatientId" placeholder="Patient ID" value="1">
+            <input type="number" id="mapDoctorId" placeholder="Doctor ID" value="1">
+            <button class="btn btn-amber" onclick="createMapping()">Assign Doctor (POST /api/mappings)</button>
+          </div>
+          <div class="row">
+            <button class="btn btn-purple" onclick="getMappings()">List My Mappings (GET /api/mappings)</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right Column: Live Response Viewer -->
+      <div>
+        <div class="response-box">
+          <div class="response-header">
+            <strong style="color: #38bdf8;">API Response</strong>
+            <span id="statusCode" class="status-tag status-200" style="display: none;"></span>
+          </div>
+          <div style="font-size: 12px; color: #64748b; margin-bottom: 8px;" id="endpointInfo">
+            Click any button on the left to see the live response.
+          </div>
+          <pre id="jsonViewer">{\n  "message": "Click any button on the left to test live API endpoints."\n}</pre>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let token = localStorage.getItem('healthcare_token') || '';
+    updateTokenDisplay();
+
+    function updateTokenDisplay() {
+      const el = document.getElementById('tokenStatus');
+      if (token) {
+        el.innerText = 'Logged In (Token Active)';
+        el.style.color = '#4ade80';
+      } else {
+        el.innerText = 'Not Logged In';
+        el.style.color = '#f87171';
+      }
+    }
+
+    async function apiRequest(method, url, body = null, requireAuth = true) {
+      const headers = { 'Content-Type': 'application/json' };
+      if (requireAuth && token) {
+        headers['Authorization'] = 'Bearer ' + token;
+      }
+
+      document.getElementById('endpointInfo').innerText = `${method} ${url}`;
+      document.getElementById('jsonViewer').innerText = 'Loading...';
+
+      try {
+        const options = { method, headers };
+        if (body) options.body = JSON.stringify(body);
+
+        const res = await fetch(url, options);
+        const data = await res.json();
+
+        const badge = document.getElementById('statusCode');
+        badge.style.display = 'inline-block';
+        badge.innerText = `${res.status} ${res.statusText}`;
+        badge.className = `status-tag ${res.ok ? 'status-200' : 'status-400'}`;
+
+        document.getElementById('jsonViewer').innerText = JSON.stringify(data, null, 2);
+        return { ok: res.ok, data };
+      } catch (err) {
+        document.getElementById('jsonViewer').innerText = JSON.stringify({ error: err.message }, null, 2);
+      }
+    }
+
+    function checkHealth() {
+      apiRequest('GET', '/api/health', null, false);
+    }
+
+    async function registerUser() {
+      const body = {
+        name: document.getElementById('regName').value,
+        email: document.getElementById('regEmail').value,
+        password: document.getElementById('regPassword').value
+      };
+      await apiRequest('POST', '/api/auth/register', body, false);
+    }
+
+    async function loginUser() {
+      const body = {
+        email: document.getElementById('loginEmail').value,
+        password: document.getElementById('loginPassword').value
+      };
+      const res = await apiRequest('POST', '/api/auth/login', body, false);
+      if (res && res.data && res.data.data && res.data.data.token) {
+        token = res.data.data.token;
+        localStorage.setItem('healthcare_token', token);
+        updateTokenDisplay();
+      }
+    }
+
+    async function createPatient() {
+      const body = {
+        name: document.getElementById('pName').value,
+        age: parseInt(document.getElementById('pAge').value),
+        gender: document.getElementById('pGender').value,
+        contact: document.getElementById('pContact').value,
+        address: document.getElementById('pAddress').value
+      };
+      const res = await apiRequest('POST', '/api/patients', body, true);
+      if (res && res.data && res.data.data && res.data.data.id) {
+        document.getElementById('mapPatientId').value = res.data.data.id;
+      }
+    }
+
+    function getPatients() {
+      apiRequest('GET', '/api/patients', null, true);
+    }
+
+    async function createDoctor() {
+      const body = {
+        name: document.getElementById('dName').value,
+        specialization: document.getElementById('dSpec').value,
+        contact: document.getElementById('dContact').value,
+        address: document.getElementById('dAddress').value
+      };
+      const res = await apiRequest('POST', '/api/doctors', body, true);
+      if (res && res.data && res.data.data && res.data.data.id) {
+        document.getElementById('mapDoctorId').value = res.data.data.id;
+      }
+    }
+
+    function getDoctors() {
+      apiRequest('GET', '/api/doctors', null, true);
+    }
+
+    function createMapping() {
+      const body = {
+        patientId: parseInt(document.getElementById('mapPatientId').value),
+        doctorId: parseInt(document.getElementById('mapDoctorId').value)
+      };
+      apiRequest('POST', '/api/mappings', body, true);
+    }
+
+    function getMappings() {
+      apiRequest('GET', '/api/mappings', null, true);
+    }
+  </script>
+</body>
+</html>
